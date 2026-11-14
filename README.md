@@ -81,15 +81,6 @@ You may use AI tools. Be prepared to explain and modify your code during a
 20-minute discussion. Do not submit keys, personal information, production logs,
 or output copied from an employer's private systems. Do not deploy a service.
 
-## Evaluation
-
-| Area | Weight | Evidence |
-| --- | --- | --- |
-| Correctness | 35% | Schema rules, safe parsing, faithful valid output |
-| Tests and edge cases | 25% | Meaningful failure cases, boundaries, repeatability |
-| Engineering judgment | 20% | Clear errors, conservative repairs, simple design |
-| Reproducibility | 10% | Offline commands, deterministic behavior |
-| Explanation | 10% | Honest limitations, tradeoffs, privacy-aware evaluation |
 
 ## Sharing and Scope
 
