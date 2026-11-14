@@ -1,0 +1,18 @@
+{
+  "scenes": [
+    {
+      "sceneNumber": 1,
+      "description": "A paper boat moves across a shallow pond.",
+      "visualPrompt": "A small blue paper boat on still water in daylight.",
+      "camera": "Wide static shot",
+      "duration": 5
+    },
+    {
+      "sceneNumber": 2,
+      "description": "The boat reaches a floating leaf.",
+      "visualPrompt": "Close view of a paper boat beside a green leaf.",
+      "camera": "Slow push in",
+      "duration": 4
+    }
+  ]
+}

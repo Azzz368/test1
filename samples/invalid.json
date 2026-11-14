@@ -1,0 +1,11 @@
+{
+  "scenes": [
+    {
+      "sceneNumber": 2,
+      "description": "   ",
+      "visualPrompt": "A synthetic sample scene.",
+      "camera": "Static",
+      "duration": "5"
+    }
+  ]
+}
