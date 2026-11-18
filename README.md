@@ -1,91 +1,34 @@
-# AI Engineering Exercise: Validate a Storyboard Response
+# Mindverse 研究员开发挑战
 
-Build a small, reliable boundary between an AI response and an application.
-This standalone exercise is adapted from a creative workflow's scene data
-shape. All examples are synthetic. No access to the original application,
-private repository, database, external API, or credentials is required.
+面向 CS 背景研究员的两道独立开发题，**二选一完成**。这是从 Mindverse 当前项目抽取数据约定、画布交互和视觉规范后整理的最小开发包，不是生产仓库镜像，也不是已经做好的题目答案。
 
-## Time Box
-
-Spend up to **4 hours**, including tests and a short explanation. An incomplete
-solution with clear limitations is preferable to unreported extra hours.
-Prerequisites: JavaScript or TypeScript, JSON, and basic automated testing.
-
-## Run
-
-Use **Node.js 22.16 or later**. No dependencies or installation are needed.
-
-```sh
-npm test
-npm run test:assessment
-```
-
-`npm test` checks the supplied fixtures, mock, and starter interface; it passes
-on the untouched starter. `test:assessment` runs acceptance examples against
-your implementation and intentionally fails until you implement it. Passing
-only `npm test` does not complete the exercise.
-
-## Implement
-
-Implement `validateStoryboard(response)` in `src/validateStoryboard.mjs` using
-the input/output types in `types/index.d.ts`. The input is an untrusted string
-returned by a model. Do not call a real model. The deterministic mock in
-`mock/model.mjs` returns the supplied scenarios without network access.
-
-Rules:
-
-1. Accept a JSON object with exactly one top-level field, `scenes`. You may also
-   strip one surrounding Markdown fence: opening line ``` or ```json and a
-   closing ``` line. Allow whitespace around the response. Do not extract JSON
-   from prose, fix malformed JSON, coerce types, or invent missing content.
-2. `scenes` must contain 1 to 12 scenes. A scene must have exactly the five
-   fields in `StoryboardScene`. Reject unknown fields, including at the root.
-3. Scene numbers must be integers equal to their one-based array positions.
-   `description`, `visualPrompt`, and `camera` must be nonempty after trimming.
-   Preserve the original string values when returning a successful result.
-4. `duration` must be a finite number between 1 and 30 seconds, inclusive.
-   The combined duration must not exceed 120 seconds.
-5. Return the discriminated result in the types file. Never throw for a string
-   input. Return one or more useful issues with stable codes and JSON Pointer
-   paths. Issue ordering is not prescribed. Do not include raw response text
-   in error messages. A failure must not include a partial `value`.
-6. Do not mutate input-derived data to make an invalid response pass. Treat text
-   such as instructions inside a description as data, not executable guidance.
-
-Issue codes and paths:
-
-| Problem | Code | Path |
+| 挑战 | 方向 | 入口 |
 | --- | --- | --- |
-| Cannot parse the allowed JSON representation | `INVALID_JSON` | empty string |
-| Wrong container/value type or absent required field | `INVALID_SHAPE` | offending field, root is empty string |
-| Unknown property | `UNKNOWN_FIELD` | that property |
-| Scene count outside 1..12 | `SCENE_COUNT` | `/scenes` |
-| Incorrect scene number | `SCENE_NUMBER` | `/scenes/{index}/sceneNumber` |
-| Empty/whitespace text field | `EMPTY_TEXT` | corresponding field |
-| Duration outside allowed bounds | `DURATION_RANGE` | corresponding duration |
-| Combined duration exceeds 120 | `TOTAL_DURATION` | `/scenes` |
+| 01 可靠的多子 Agent 运行时 | 调度、上下文与长期记忆、RAG、用户干预、执行可靠性、安全边界 | [题面与启动](challenge-01-multi-agent/README.md) |
+| 02 Agent 虚拟摄影棚 | Three.js 场景工具、摄影机、资产身份、白模输出与生成渲染衔接 | [题面与启动](challenge-02-agent-studio/README.md) |
 
-Check container types before accessing children. For the same field, a wrong
-type is `INVALID_SHAPE`; apply range/content checks only after type checks pass.
-The public tests are examples, not exhaustive coverage. Add your own edge cases.
+## 开始
 
-## Deliver
+Node.js >=22.18，npm。进入所选目录，执行 `npm install` 和 `npm run dev`。第一题默认端口 3061，第二题 3062。两个目录分别拥有依赖、源码、测试和文档，可以单独复制运行；根目录不需要安装。
 
-- The implementation and tests, runnable with the documented commands.
-- A short `SUBMISSION.md`: approach, limitations, time spent, and how to run any
-  extra tests. Include AI tools used and how you checked their output.
-- A brief answer: how would you evaluate this validator on real model outputs
-  without storing private prompts or responses?
+建议投入 20–30 小时，3–5 天内提交。真实 LLM 和付费生成服务均非必需；离线 mock 必须经过真实的协议、执行和错误处理路径。请明确标注 mock / live，不把预设成功动画当成智能体运行。允许使用 AI 编程工具和开源库，但需能够解释与调试交付内容。
 
-You may use AI tools. Be prepared to explain and modify your code during a
-20-minute discussion. Do not submit keys, personal information, production logs,
-or output copied from an employer's private systems. Do not deploy a service.
+## 开发包边界
 
+- 保留文本/参考/媒体节点概念、节点连线、版本化快照和运行阶段事件。
+- 第一题是从生产契约精简适配后的可编辑画布，第二题以同样的画布概念衔接新增白模场景；没有假称完整生产 Agent 已被移植。
+- 每题的 `docs/ARCHITECTURE.md` 记录原项目来源和适配边界，`docs/暗色主题界面标准1.md` 与 `docs/亮色主题界面标准1.md` 为原规范的逐字副本。主题规范中的后台示例不是要求开发的功能。
+- 不包含账号、鉴权、支付、管理后台、生产模型路由、真实用户资料、云资源凭据、生产资产或部署配置。
+- 没有默认授权任意 shell、生成代码执行或外网工具。真实服务如需密钥，只能通过自行添加的服务端适配器读取，不能进入客户端或 Git。
 
-## Sharing and Scope
+## 提交
 
-This repository is the complete candidate handout. It contains only the task,
-types, synthetic examples, an offline mock, tests, and a starter function.
-There is deliberately no reference solution. Share this repository rather than
-the original application. No upstream history, user content, provider routing,
-billing logic, infrastructure settings, or legal documents are included.
+仅提交所选题目录及必要说明，不需完成另一题。包含代码、锁文件、可复现测试、一份示例项目、架构取舍、已知限制和实际用时。不要提交 `node_modules`、构建缓存、密钥或真实用户数据。每题详细验收步骤与 100 分评分表见对应题面。
+
+发布目标为 `https://github.com/Azzz368/test1.git`。本目录是可发布内容，不包含主项目历史；是否公开底层自有代码及原规范，由仓库所有者确认。
+
+## 底座验证
+
+第二题已按基础入口重新精简：仅保留空 Three.js 网格、基础画布与消息输入，不再提供白模、选物、镜头预设、导出、场景模型或相关业务测试。第一题保持不变。旧版摄影棚的测试与导出验证不代表当前第二题具备这些能力；第二题当前以类型检查、生产构建及基础页面交互检查为验证范围。
+
+验证使用原工作区已有的依赖和 Node 22.16 的实验性类型擦除；候选人环境要求仍为 Node >=22.18。尚未验证从远程仓库全新克隆安装。不包含锁文件，首次联网安装后应生成并提交锁文件；不要把已有依赖环境下的构建当作全新安装验证。
