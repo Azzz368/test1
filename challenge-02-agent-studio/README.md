@@ -1,64 +1,81 @@
-# 挑战 02：Agent 驱动的虚拟摄影棚
+# Agent Studio
 
-两道题中选择一道完成。本题提供一个最基础的平台入口，请你基于 Three.js 和 Agent，开发一个能够通过对话搭建白模场景、调整机位并输出画面的虚拟摄影棚。
+Choose one of the two projects. Build a conversation-driven virtual studio using Three.js and an Agent, connecting scene edits to visible results.
 
-可以把它理解为面向影视前期的轻量在线工作室，不要求实现完整 Blender。重点是把 Agent 与一个独立的场景模块真正连接起来，而不是只展示聊天结果。
+## Setup
 
-## 启动
-
-Node.js >=22.18，npm。在本仓库根目录执行：
-
+Requires Node.js >=22.18 and npm. From the repository root:
 ```sh
 cd challenge-02-agent-studio
 npm install
 npm run dev
 ```
+Open http://localhost:3062. Type check: `npm run check`. Production build: `npm run build`.
 
-访问 http://localhost:3062 。检查及构建：`npm run check`、`npm run build`。
+## Provided Starter
 
-## 已提供的入口
+- Next.js, React and TypeScript shell with light/dark themes.
+- Empty Three.js grid with orbit controls; basic xyflow nodes and connections.
+- Message input displaying local text only, with no Agent execution or scene interaction.
 
-- Next.js、React、TypeScript 项目和亮暗主题切换。
-- 一个只有网格的 Three.js 空场景，可用鼠标旋转、缩放。
-- 一个基础节点画布，可编辑文本、拖动和连接节点。
-- 一个消息输入框，只在页面中记录用户文字，未接入 Agent，也不会改变场景。
-- 原项目的亮色、暗色主题规范，位于 `docs/`。
+No scene props, asset management, persistence, export, model integration or tests are provided. The grid and viewing controls are not studio features. See [Architecture](docs/ARCHITECTURE.md) for boundaries and sources.
 
-没有提供白模物体、资产管理、物体编辑、镜头预设、图片或视频导出、场景保存、模型接入、场景数据协议与业务测试。这些需要由你设计实现。网格和鼠标观察相机只是渲染环境，不是摄影棚功能。
+## Work to Implement
 
-## 开发目标
+1. **Conversation and scene:** let an Agent create and modify a Three.js whitebox scene from dialogue, including follow-up requests and clear feedback for invalid operations.
+2. **Asset identity:** reuse identifiable objects across edits, with basic position, rotation and scale controls.
+3. **Cameras:** support multiple shots and conversational framing changes; camera-only requests must leave objects unchanged.
+4. **Output:** export images and a short video or numbered image sequence, traceable to the scene, assets and cameras used.
+5. **Render linkage:** connect whitebox output and asset references to a downstream image/video generation service; explain continuity constraints, checks and limitations across shots. A simulated service is acceptable; paid APIs are optional.
+6. **Local workflow:** connect the basic canvas to at least one working data path; save and reopen projects locally while preserving references and protecting existing content from invalid edits.
 
-1. **对话搭建场景**：用户描述一个简单摄影棚，Agent 能驱动场景创建和修改白模，例如桌子、方块、球体。具体如何表示场景、调用工具与校验操作，由你决定。
-2. **资产管理**：能识别和复用场景中的资产，修改时保留同一对象的身份，支持基本位置、旋转、缩放操作。
-3. **摄影机控制**：通过对话调整机位和构图，支持多个镜头；用户说“只改机位”时不应重新生成或改变物体。
-4. **画面输出**：输出白模图片，以及短视频或编号图片序列。输出应能对应到当时的场景、资产与镜头。
-5. **渲染衔接**：设计后续图像或视频生成服务的接入方式，把白模与资产参考交给 Agent 使用，说明如何约束和检查不同镜头中的资产一致性。允许模拟服务，不强制付费 API。
-6. **形成闭环**：让基础画布与上述至少一条实际数据路径连接起来，并支持保存、重新打开项目。对话中允许用户补充要求；无效操作应给出反馈，避免破坏已有场景。
+Choose the architecture, data structures, Agent framework, protocols, storage and tests. Open-source libraries and replaceable offline model adapters are acceptable. Distinguish working functionality from simulation; prerecorded logs or a few fixed commands do not replace Agent execution.
 
-架构、数据结构、Agent 框架、工具协议、存储和测试方法不作指定。可以使用成熟开源库。可提供可替换的离线模型适配，但不能用播放预录日志或仅增加几个固定命令代替核心执行逻辑；说明真实完成与模拟的边界。
+## Delivery and Boundaries
 
-## 验收示例
+Provide source, dependency lockfile, setup instructions, necessary tests, an example project and a brief demonstration. Document design decisions, limitations, incomplete work and simulated services.
 
-- “搭一个摄影棚，桌上放一个方块和一个球体”，能看到对应白模。
-- “做一个全景和一个近景”，随后“把近景机位降低，不动物体”，场景与资产保持一致。
-- 调整同一物体，保存并重新打开，仍能继续引用它。
-- 输入一个无法执行或不合法的要求，得到明确反馈，已有内容不被错误改写。
-- 导出图片和短视频或图片序列，展示输出来源，以及后续生成式渲染如何复用同一资产参考。
+Complex materials, mesh editing, rigging, physics, custom models, authentication, billing and production deployment are out of scope. Never execute arbitrary user/model-generated code or shell commands; keep real model keys server-side. Do not include secrets, personal data, dependencies or build caches.
 
-这些是结果要求，不是预设实现步骤。不要求复杂材质、网格编辑、骨骼、物理仿真、自研模型、登录、支付或生产部署。
+---
 
-## 提交与评价
+## 繁體中文
 
-建议投入 20–30 小时，优先完成一个可演示闭环，说明取舍和未完成项。
+### Agent 虛擬攝影棚
 
-| 维度 | 分值 |
-| --- | ---: |
-| Agent 与场景的有效协作、用户修改要求 | 30 |
-| 场景、资产和摄影机模块 | 30 |
-| 输出与资产一致性方案 | 20 |
-| 可靠性、安全边界与必要测试 | 15 |
-| 启动说明、架构取舍和已知限制 | 5 |
+兩個專案擇一完成。使用 Three.js 與 Agent 建立對話驅動的虛擬攝影棚，讓場景修改產生可見結果。
 
-提交源码、依赖锁文件、运行说明、必要测试、一份示例项目和简短演示。说明投入时间、AI 工具使用情况，以及哪些功能使用模拟服务。不提交密钥、真实用户资料、依赖目录和构建缓存。
+## 啟動
 
-不允许执行用户或模型生成的任意代码、shell 命令。真实模型密钥仅能在服务端读取。外部模型的视觉一致性需要说明约束方法与局限，不因拥有资产 ID 就宣称完全保证。
+需要 Node.js >=22.18 與 npm。在儲存庫根目錄執行：
+```sh
+cd challenge-02-agent-studio
+npm install
+npm run dev
+```
+開啟 http://localhost:3062。型別檢查：`npm run check`。正式建置：`npm run build`。
+
+## 已提供的基礎
+
+- Next.js、React 與 TypeScript 外殼，含亮暗主題。
+- 空白 Three.js 網格與環繞觀察控制；基本 xyflow 節點與連線。
+- 訊息輸入僅在本機顯示文字，沒有 Agent 執行或場景互動。
+
+未提供場景物件、資產管理、持久化、匯出、模型整合或測試。網格與觀察控制不屬於攝影棚功能。來源與邊界見[架構說明](docs/ARCHITECTURE.md)。
+
+## 需實作的內容
+
+1. **對話與場景：** Agent 能依對話建立及修改 Three.js 白模場景，支援追加要求，並清楚回饋無效操作。
+2. **資產身分：** 編輯時重用可識別的物件，支援基本位置、旋轉與縮放控制。
+3. **攝影機：** 支援多個鏡頭與對話構圖調整；僅修改機位的要求不得改動物件。
+4. **輸出：** 匯出圖片，以及短影片或編號圖片序列，並可追溯使用的場景、資產與攝影機。
+5. **渲染銜接：** 將白模輸出與資產參考連接至後續圖片或影片生成服務；說明跨鏡頭連貫性的約束、檢查與限制。可使用模擬服務，不強制付費 API。
+6. **本機流程：** 將基本畫布連接至少一條實際資料路徑；支援在本機儲存及重新開啟專案，保留參照，並避免無效編輯破壞既有內容。
+
+架構、資料結構、Agent 框架、協定、儲存與測試自行選擇。可使用開源函式庫與可替換的離線模型介接。須區分實際功能與模擬；預錄紀錄或少數固定指令不能取代 Agent 執行。
+
+## 交付與邊界
+
+提供原始碼、相依套件鎖定檔、啟動說明、必要測試、範例專案與簡短示範。說明設計取捨、限制、未完成項目與模擬服務。
+
+複雜材質、網格編輯、骨架、物理、自建模型、登入、付款與正式部署不在範圍內。不得執行使用者或模型產生的任意程式碼或 shell 指令；真實模型金鑰僅存於伺服器端。勿包含機密、個人資料、相依套件目錄或建置快取。

@@ -1,19 +1,33 @@
-# 基础入口说明
+# Starter Architecture
 
-这是独立的 Next.js / React / TypeScript 起步项目，不依赖 Mindverse 的生产接口或配置。
+Standalone Next.js / React / TypeScript project; no Mindverse production services or configuration are required.
 
-## 文件
+## Provided Files
 
-- `app/page.tsx`：页面入口。
-- `src/Starter.tsx`：页面布局、主题、标签页和本地消息展示；没有 Agent 回复或执行逻辑。
-- `src/BasicViewport.tsx`：初始化 Three.js renderer、观察相机、鼠标控制和网格，并在卸载时释放资源；没有业务物体或场景协议。
-- `src/Workflow.tsx`：基础节点画布，只提供节点与连线交互，没有执行或持久化。
-- `app/globals.css`：基础界面样式。
+- [app/page.tsx](../app/page.tsx): page entry.
+- [src/Starter.tsx](../src/Starter.tsx): layout, themes, tabs and local message display; no Agent execution.
+- [src/BasicViewport.tsx](../src/BasicViewport.tsx): empty Three.js grid, viewing camera, orbit controls and resource cleanup; no scene props.
+- [src/Workflow.tsx](../src/Workflow.tsx): basic xyflow nodes and connections; no execution or persistence.
+- [app/globals.css](../app/globals.css): interface styles.
 
-## 来源与边界
+## Sources and Implementation Boundary
 
-画布入口沿用当前 Mindverse 项目的 React Flow 技术选择及文本、场景、输出节点概念；不是复制完整生产编辑器。亮暗主题规范是原项目文档的副本，文档中的后台示例不属于开发任务。
+The canvas technology and text, scene and output node concepts draw on the parent Mindverse project, not its complete production editor. Theme references also originate there; the parent documentation evolves independently and is not guaranteed to match local references verbatim.
+No production Agent, model routing, accounts, billing, asset library, storage, export or tests are included. Messages do not control the viewport; messages and canvas edits are lost on refresh. Scene editing, asset identity, cameras, render linkage, local saving and tests remain to be implemented; no architecture, schema or protocol is prescribed.
 
-没有迁入生产 Agent、模型路由、账户、支付、素材库或存储。Three.js 网格是初始化环境，消息输入只显示文字，两者没有联动。刷新会丢失消息和画布编辑。
+# 基礎架構
 
-没有预置场景数据结构、资产 ID 规则、工具协议、摄影机业务逻辑、保存或导出实现，也不提供其测试答案。候选人自行设计模块和必要测试；题面描述验收目标，不规定实现架构。
+獨立的 Next.js / React / TypeScript 專案；不需要 Mindverse 正式服務或設定。
+
+## 已提供的檔案
+
+- [app/page.tsx](../app/page.tsx)：頁面入口。
+- [src/Starter.tsx](../src/Starter.tsx)：版面、主題、分頁與本機訊息顯示；沒有 Agent 執行。
+- [src/BasicViewport.tsx](../src/BasicViewport.tsx)：空白 Three.js 網格、觀察相機、環繞控制與資源清理；沒有場景物件。
+- [src/Workflow.tsx](../src/Workflow.tsx)：基本 xyflow 節點與連線；沒有執行或持久化。
+- [app/globals.css](../app/globals.css)：介面樣式。
+
+## 來源與實作邊界
+
+畫布技術與文字、場景、輸出節點概念源自上層 Mindverse 專案，並非完整正式編輯器。主題參考亦源自該專案；上層文件持續獨立修訂，不保證與本機參考逐字相同。
+未提供正式 Agent、模型路由、帳戶、付款、資產庫、儲存、匯出或測試。訊息不會控制場景；重新整理會遺失訊息與畫布修改。場景編輯、資產身分、攝影機、渲染銜接、本機儲存與測試均待實作，不指定架構、資料結構或協定。

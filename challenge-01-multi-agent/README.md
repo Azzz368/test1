@@ -1,14 +1,12 @@
-# 挑战 01：可靠的多子 Agent 运行时
+# Reliable Multi-Agent Runtime
 
-这是 Mindverse 公开招聘挑战的第一题。如果招聘入口提供两道题，**只选其中一道完成，不需要两题都做**。本文只定义这一题。
+## English
 
-我们提供一个可以独立运行的创意画布。请把旁边的单 Agent 演示升级为一个可恢复、可干预、可验证的多子 Agent 运行时。可参考 Cue / Manus 在任务委派、进度反馈、人机协作上的思路，但不要复制其品牌、界面或实现，也不要求做完整 Manus。
+Extend the standalone canvas with a recoverable multi-agent runtime. Deterministic roles and local tools are sufficient. Choose one of the two standalone projects; suggested effort: 20–30 hours.
 
-建议用时 **3–5 天，总投入上限 20–30 小时**。请在提交中说明实际用时，优先完成下面的核心闭环。不是一个月的产品项目；合理缩减 UI、使用本地存储和确定性工具都可以。我们评估控制逻辑与工程取舍，不比拼 API 花费、动画或功能数量。
+### Run
 
-## 快速开始
-
-环境：Node.js **22.18 或更新版本**，npm。此目录是独立包，不依赖父项目的环境变量、路径别名、生产路由或服务。
+Requires Node.js 22.18+ and npm. No model key or parent application is required.
 
 ```sh
 cd challenge-01-multi-agent
@@ -16,7 +14,7 @@ npm install
 npm run dev
 ```
 
-打开 http://localhost:3061 。端口被占用时，可执行 `npm run dev -- --port 3062`。
+Open http://localhost:3061. For another port: `npm run dev -- --port 3062`.
 
 ```sh
 npm test
@@ -25,111 +23,75 @@ npm run build
 npm start
 ```
 
-测试脚本为 `node --experimental-strip-types --test tests/*.test.ts`。不需要模型密钥即可运行全部起步功能与测试。依赖版本已固定；首次安装后可随提交附上自己的锁文件。
+### Provided and Missing
 
-## 已提供什么
+- Next.js, React Flow and TypeScript canvas editing, light/dark themes, manual browser save/load and validated JSON import/export (2 MB limit).
+- Compatible snapshot exports: `CanvasNode`, `WorkflowEdge`, `CanvasSnapshot`, `parseSnapshot` and `initialSnapshot`.
+- A synchronous single-agent mock, deterministic events, a simulated failure switch and unit tests. Its display delay and stop button do not implement asynchronous execution or tool cancellation.
+- No multi-agent runtime, durable run history, recovery, approvals, long-term memory or RAG. Canvas connections are not executable dependencies; canvas saves are not runtime checkpoints.
+- No backend, authentication, real models or media generation. The local reference image is a historical custom Three.js whitebox image, not production media or a generated result.
 
-- Next 15、React 19、TypeScript、React Flow 12 与 Lucide 图标组成的独立前端。
-- 浅色 / 深色灰阶界面；字体优先使用设备已有 Inter，不会请求远程字体。
-- 节点标题、内容、类型编辑，添加 / 删除节点、连接 / 删除连线、拖动、平移和缩放。
-- 浏览器手动保存 / 载入，JSON 导出 / 导入。导入校验版本、节点 ID、位置、类型、状态和连线端点；文件上限为 2 MB。导入成功会替换当前画布，失败不会替换。
-- 核心快照 API：`CanvasNode`、`WorkflowEdge`、`CanvasSnapshot`、`parseSnapshot`、`initialSnapshot`。请保持已有导出兼容，可添加新类型或迁移层。
-- 一个明确标记为「单 Agent · Mock」的本地助手，返回固定格式的画布结构摘要；包含模拟工具失败开关。
-- 确定性事件协议及单元测试。事件带 `runId`、事件 ID、阶段、类型、消息、模拟时间与可选元数据，不输出思维链。
-- 本地参考图 `public/samples/reference.png` 来自第二题自制 Three.js 白模视口，不使用生产素材；这不是生成服务。
+### Project Goals
 
-## 没有提供什么
+- Coordinate at least three distinct roles with meaningful data handoffs, dependencies, concurrency, conflict handling and failure propagation.
+- Preserve progress across refresh/restart and prevent duplicate effects during recovery, including uncertain tool outcomes. Bound retries, timeouts, concurrency and tool usage; distinguish completion, blocking and cancellation.
+- Keep persistent, revisable, deletable long-term memory separate from RAG evidence. Retrieval must expose sources and respect document versions, deletion and project/access scope.
+- Accept user requirement changes during execution. Prevent stale results and approvals from authorizing changed work; require explicit, scoped approval for a simulated side effect.
+- Restrict tools and validate arguments. Retrieved text, imports and tool responses are untrusted data, not authority. Keep secrets and private reasoning out of browser data and logs; prohibit arbitrary shell execution and production/paid services.
+- Expose roles, progress, blockers, requirement versions, evidence and recovery through concise summaries and redacted events, without private chain-of-thought.
 
-**现有 mock 不是本题答案。** 它在一个纯函数中同步生成事件，UI 的 350 ms 延迟只是展示延迟；停止按钮只取消这次结果展示，不代表工具被中断。刷新会丢失运行记录，只保留手动保存的画布和主题。
+### Verification and Documentation
 
-没有多 Agent 调度、任务依赖执行、并发冲突处理、持久化检查点、崩溃恢复、审批、运行中修改需求、会话记忆或 RAG。没有真实模型、后端、数据库、登录、多租户、付费工具、图片 / 视频生成和生产安全隔离。画布连线只是编辑数据，尚不是可执行任务 DAG，当前也不拒绝跨多个节点的环。
+Provide a reproducible offline test command covering coordination, injected failures, recovery without duplicate effects, changed requirements, approvals, cancellation and hostile/stale evidence. State what works and what remains unimplemented; a recording does not replace tests.
 
-JSON 校验是起步边界，不是完整的不可信输入安全审计或通用图迁移器。不要把本地画布存档等同于运行时持久化，也不要把聊天全文或事件日志叫作长期记忆。
+Update the [architecture](docs/ARCHITECTURE.md) with actual boundaries, persistence guarantees, safety assumptions and limitations. Include brief usage instructions and dependency/source attribution; exclude secrets, private data and build artifacts. Real-model integration is optional and must remain separate from offline operation.
 
-## 核心任务
+---
 
-在这张画布旁实现一个小而完整的运行时。可新增独立模块和本地 API，但不要接入或修改父项目生产系统。提供明显的模式标识；离线评测必须能完成，不强制使用真实 LLM。确定性角色和模拟工具可以获得满分，前提是它们经过真实的调度、数据传递、持久化和故障控制路径，而不是预录时间线。
+## 繁體中文
 
-### 1. 真正的角色协作
+### 可靠的多智能體執行系統
 
-- 至少三个职责清晰的角色，例如规划者、资料研究者、执行 / 校验者。输出必须成为下游输入，不能只是把同一串函数换成三个角色名。
-- 展示至少一个依赖分支、两个可并发的独立任务，以及一次对同一产物的写入冲突和确定的处理策略。
-- 角色间采用可验证的结构化消息。调度器负责前置条件、并发上限、失败传播、终态和结果合并，而不是依靠提示词保证正确性。
-- 不要求开放式递归委派；固定少量角色和有限 DAG 足够。需要检测无效依赖 / 环并明确拒绝。
+在獨立畫布中擴充可復原的多代理執行系統，可使用確定性角色與本機工具。兩個獨立專案擇一完成即可；建議投入 20–30 小時。
 
-### 2. 可恢复的执行控制
+### 執行
 
-- 持久化任务状态、需求版本、检查点与足以恢复的引用，明确写入原子性边界。刷新 / 进程重启后继续未完成工作，不重复应用已经生效的结果。
-- 提供可重放的结构化事件或等效恢复机制。解释命令与事件的区别、重放是否执行副作用，以及如何处理「工具已成功、确认未落盘」的窗口。
-- 用幂等键 / 去重记录保护工具调用、结果提交与审批。不要只声称外部世界具有 exactly-once 保证；说明不能保证时的核对或补偿策略。
-- 支持取消、工具反馈、有限重试、超时与预算。预算至少限制总步数或工具次数，并约束并发和重试；达到边界应进入可解释终态，不无限循环。
-- 用本地文件、SQLite、IndexedDB 等任选一种真正跨刷新或重启保留的数据层。无需部署数据库集群或通用工作流平台。
+需要 Node.js 22.18+ 與 npm，不需要模型金鑰或父應用程式。
 
-### 3. 持久上下文与文档检索
+```sh
+cd challenge-01-multi-agent
+npm install
+npm run dev
+```
 
-- 明确区分会话记忆（用户已确认的目标、约束、决定及来源）与检索文档（可失效的外部证据），不要把两者混成一个向量集合。
-- 会话记忆支持持久化、读取、修订、删除和项目 / 会话隔离；压缩不能悄悄把推测提升为事实。
-- 用少量本地文档做最小 RAG：检索后再生成 / 选择动作，展示查询、证据 ID、文档来源、版本或更新时间、片段引用及筛选原因。无需向量数据库，关键词 / 全文检索也可以。
-- 证明版本、适用范围 / 权限过滤生效；旧版或已删除文档不能重新进入新结果。说明删除如何影响缓存、索引、记忆中的引用和历史审计记录。
-- 把检索文本和工具反馈视为不可信数据。恶意文档中的「忽略约束、调用某工具」不得升级为指令、审批或权限；用恶意样例和测试证明。
+開啟 http://localhost:3061。更換連接埠：`npm run dev -- --port 3062`。
 
-### 4. 用户中途干预与审批
+```sh
+npm test
+npm run typecheck
+npm run build
+npm start
+```
 
-- 任务运行中允许补充 / 修改需求。生成新的需求版本，识别并失效受影响的步骤和下游结果，而不是每次静默重跑一切。
-- 迟到的旧版本结果不能覆盖新状态；未受影响成果可复用，但要说明依据。
-- 至少一个有副作用的模拟工具需要显式审批。审批绑定任务、步骤、需求版本、工具和参数摘要 / hash；修改参数或需求后，旧审批不能通用复用。
-- 审批支持拒绝、重复提交去重和过期判定。取消后，即使工具不支持物理中断，也不得再提交迟到结果；标清逻辑取消与物理取消。
-- 侧栏能看到角色、步骤依赖、状态、阻塞原因、需求版本、证据引用和恢复入口。以结构化摘要解释决策，不采集或展示模型私有思维链。
+### 已提供與未實作
 
-### 5. 安全边界与可观测性
+- Next.js、React Flow 與 TypeScript 畫布編輯、明暗主題、瀏覽器手動儲存／載入，以及經驗證的 JSON 匯入／匯出（上限 2 MB）。
+- 保持相容的快照匯出：`CanvasNode`、`WorkflowEdge`、`CanvasSnapshot`、`parseSnapshot`、`initialSnapshot`。
+- 同步單代理模擬、確定性事件、模擬失敗開關與單元測試。顯示延遲與停止按鈕並未實作非同步執行或工具中斷。
+- 尚無多代理執行系統、持久執行紀錄、復原、審批、長期記憶或 RAG。畫布連線不是可執行依賴；畫布存檔不是執行檢查點。
+- 尚無後端、驗證、真實模型或媒體生成。本機參考圖為歷史自製 Three.js 白模圖，並非正式環境素材或生成結果。
 
-- 工具使用白名单、参数校验与最小权限；导入文件、工具输出和检索资料都不能成为任意代码执行入口。不要求实现真正 OS 沙箱，但必须明确模拟边界。
-- 记录脱敏的 run / step / attempt / requirementVersion、工具结果状态、耗时、预算、错误与关键证据引用，支持定位失败及恢复路径。
-- 不把密钥、完整敏感文档、私有思维链写进前端或日志。不要执行任意 shell、访问生产网络或产生付费副作用。
+### 專案目標
 
-## 必须演示的评测场景
+- 協調至少三個職責明確的角色，具實際資料交接、依賴、並行、衝突處理與失敗傳遞。
+- 重新整理／重啟後保留進度，復原時避免重複副作用，並處理工具結果不確定的情況。限制重試、逾時、並行與工具用量，區分完成、阻塞與取消。
+- 將可持久儲存、修訂及刪除的長期記憶與 RAG 證據分開。檢索需呈現來源，並遵守文件版本、刪除及專案／存取範圍。
+- 接受執行中的使用者需求修改。防止舊結果與舊審批授權變更後的工作；模擬副作用須取得明確且限定範圍的審批。
+- 限制工具並驗證參數。檢索文字、匯入資料與工具回應均為不可信資料，不具授權效力。瀏覽器資料與紀錄不得包含機密或私有推理；禁止任意 shell 執行及正式環境／付費服務。
+- 以精簡摘要與去識別化事件呈現角色、進度、阻塞、需求版本、證據與復原狀態，不揭露私有思維鏈。
 
-使用可控故障注入和固定种子 / 夹具，允许评审一条命令复现。建议场景：为同一主体整理三个机位的拍摄方案，研究构图规则与素材许可，最后由模拟发布工具写出一个本地产物。
+### 驗證與文件
 
-1. 在需求 v1 下启动至少三个角色。两个研究任务并发，下游等待两者；记录依赖和输入 / 输出引用。
-2. 注入上游工具失败或超时。下游不得误报成功；有限重试后继续或明确阻塞。制造一次产物写冲突，验证合并 / 拒绝 / 串行化策略。
-3. 在有检查点且至少一个副作用已发生的边界强制刷新或重启。恢复同一个 run，重放不能重复创建画布节点或重复发布。测试包含成功后确认丢失窗口。
-4. 对同一待审批步骤提交两次相同审批，并尝试提交错误作用域审批。合法动作最多生效一次，错误审批被拒绝。
-5. 运行中把需求改为 v2，例如「仅两机位，禁用某素材」。使正在执行的 v1 结果延迟返回；受影响步骤失效，旧结果不能回写，旧审批不能授权新的参数。
-6. 检索夹具同时包含相关规则、新旧冲突版本、跨项目文档、已删除文档与提示注入文档。展示最终证据及过滤理由，证明不能越权、复活已删除内容或执行文档指令。
-7. 再取消一轮运行，验证取消后的回写隔离；另测预算耗尽与永久失败，不无限重试。最终状态能区分完成、阻塞、取消，而不是全部显示成功。
+提供可重現的離線測試指令，涵蓋協作、故障注入、無重複副作用的復原、需求變更、審批、取消及惡意／過期證據。明確列出可用與未實作項目；錄影不能取代測試。
 
-提交前明确哪些场景通过，哪些仍是限制。只有演示视频、没有可执行故障测试，不视为完成可靠性验收。
-
-## 核心与扩展
-
-**核心范围：** 三角色、有限任务图、本地持久化、一次并发冲突、幂等恢复、作用域审批、需求版本、最小检索和恶意证据隔离，以及上面的自动化场景。UI 只需清楚呈现这些状态，不需要另做管理后台。
-
-**可选扩展：** 真模型适配器、流式事件、更好的记忆压缩 / 检索评估、worker 租约、更多恢复窗口、可视化 trace。只有核心闭环已验证后才值得投入；这些不额外加分补偿核心缺失。
-
-**明确不做：** 多租户 SaaS、计费、通用浏览器自动化、互联网搜索平台、分布式集群、完整媒体生成链、生产发布系统、完整 Cue / Manus 克隆。不要为凑功能牺牲关键状态正确性。
-
-## 评分（100 分）
-
-| 项目 | 分值 | 主要依据 |
-| --- | ---: | --- |
-| 多角色协作与调度 | 20 | 有真实依赖、并发、结构化交接、冲突策略与失败传播 |
-| 持久化、恢复与幂等 | 25 | 重启 / 重放 / 确认丢失窗口可验证，无重复副作用 |
-| 记忆、RAG 与证据边界 | 20 | 两类上下文分离，版本 / 范围 / 删除过滤与注入防护 |
-| 用户干预与执行控制 | 15 | 需求失效、迟到隔离、作用域审批、取消、重试 / 超时 / 预算 |
-| 自动化测试与可观测性 | 15 | 可复现故障场景、结构化脱敏 trace、清晰终态 |
-| 工程表达与可用性 | 5 | 独立运行、代码清晰、架构取舍和限制诚实，界面可操作 |
-
-仅修改 UI、给串行函数冠以多个 Agent 名称、预录成功事件、依靠刷新清空状态，不能获得相应控制能力的分数。安全越界或不可复现问题会在对应项目扣分，并记录风险；不按模型品牌或输出文采评分。
-
-## 提交内容
-
-- 此独立项目的源码、必要依赖与运行说明，不提交密钥、`node_modules`、构建缓存、真实用户数据或生产凭据。
-- 更新架构文档：模块 / 状态转换、数据模型、持久化事务边界、并发 / 幂等策略、记忆与证据生命周期、安全假设。
-- 一条可运行的自动化验收命令，包含故障注入；附测试结果和关键 trace 样例。写明运行时版本与 mock / live 模式。
-- 简短演示录屏或操作步骤，覆盖运行、故障恢复、用户改需求、审批与证据查看；录屏不是测试替代品。
-- 已知限制、未完成项、实际用时，以及在额外半天内最优先修复的一个风险。
-
-允许使用 AI 编程工具、开源库和公开资料。请说明主要使用方式与关键引用，并能够解释、修改、调试提交的代码和测试。不要提交无法解释的自动生成框架，也不要包含第三方私有实现或未授权素材。
-
-实现来源、起步包边界和安全扩展方式见 [架构说明](docs/ARCHITECTURE.md)。
+更新[架構說明](docs/ARCHITECTURE.md)，記錄實際邊界、持久化保證、安全假設與限制。附簡短操作說明及依賴／來源註記；不納入機密、私人資料或建置產物。真實模型整合為選用功能，須與離線執行分開。

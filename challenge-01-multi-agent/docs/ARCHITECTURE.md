@@ -1,73 +1,57 @@
-# 起步包架构与边界
+# Starter Architecture
 
-## 定位
+## English
 
-这是从 Mindverse 画布产品概念缩减适配出的招聘起步包，不是生产应用的分支部署，也不是已完成的多 Agent 运行时。可以将本目录单独复制到新仓库运行；源码没有父项目别名、跨目录运行时导入或生产 API 请求。
+This standalone canvas adapts Mindverse concepts, not production services. It has no parent runtime imports, production API calls or implemented multi-agent runtime.
 
-## 当前调用路径
+### Current Boundaries
 
-```text
-页面 / React Flow
-  ├─ 编辑器节点与连线状态
-  ├─ parseSnapshot → localStorage 或 JSON 文件
-  └─ runMockAgent(指令, 当前快照, 故障开关)
-       ├─ 输入与快照校验
-       ├─ 单角色本地 summarize_canvas
-       └─ 事件 + 摘要 → 侧栏
-```
+- `src/core/canvas.ts` owns versioned snapshots, initial data and parsing. Preserve its public exports. Parsing validates structure and clones accepted data; it is not a complete security audit or cycle detector.
+- `src/core/mockAgent.ts` synchronously returns a single-agent canvas summary and deterministic events. It has no network, storage or model dependency; simulated failure ends in `blocked`.
+- `src/app/page.tsx` owns React Flow interaction and browser persistence. Summaries reflect the snapshot at invocation. The display timer is not execution; stopping it does not interrupt a tool. Mock phases are not separate agents.
+- `src/app/globals.css` supplies styles and themes without remote font downloads. Theme documents are adapted references, not verbatim originals: [light](亮色主题界面标准1.md), [dark](暗色主题界面标准1.md).
+- `tests/canvas.test.ts` and `tests/mockAgent.test.ts` cover snapshot validation/isolation and mock behavior, not browser interaction or multi-agent reliability.
 
-- `src/core/canvas.ts`：现有公共 API，提供最小版本化快照、示例图和解析校验。未为 UI 扩充此 API。解析成功后克隆，避免导入对象直接被编辑。
-- `src/core/mockAgent.ts`：纯 TypeScript，无 React、网络、密钥或存储依赖。显式输入运行 ID；固定模拟时钟和顺序事件 ID，因此相同输入得到相同输出。
-- `src/app/page.tsx`：React Flow 的交互与浏览器存储适配。编辑器类型补上 `selected`、尺寸等 UI 字段，核心模块不依赖 React Flow。保存 / 导入 / 导出都经过公共解析入口。
-- `src/app/globals.css`：组件样式和灰阶主题变量；主题在浏览器切换并保存。优先设备已有 Inter，缺失时使用中文字体与 sans-serif，不依赖字体下载。
-- `tests/canvas.test.ts`、`tests/mockAgent.test.ts`：快照隔离、非法图数据、mock 确定性和失败路径。它们不证明浏览器交互或多 Agent 可靠性。
+### Data and Safety
 
-当前 localStorage 只存一个手动保存的画布槽位与主题。它不存 run、事件、需求版本或审批。载入与导入替换画布，不会恢复或重新计算旧摘要；摘要对应发起运行时的快照。单次运行记录只在内存保留，下一次运行替换它。
+Browser storage holds one manually saved canvas and the theme, not runs, events, approvals or requirement versions. Import/load replaces the canvas without restoring execution; run history exists only in memory.
 
-页面调用 mock 时已同步算出结果，短暂定时器仅用于展示状态；停止只清除定时器。不要把这个实现当作异步工具取消、真实耗时、流式执行、检查点或重放。事件时间是固定测试时间，不是真实时钟。现有 `planning` 等阶段是一个 Agent 的阶段，不是多个子 Agent。
+The mock reads canvas structure and renders text; it neither executes node content nor mutates nodes. The local reference image is a historical custom Three.js whitebox image, not production media. No image generation service is included.
 
-## 与生产代码的对应关系
+JSON validation and the 2 MB import limit are partial safeguards. There is no complete URL/path policy, resource isolation, authentication, encrypted storage or prompt-injection defense for a future model/tool pipeline.
 
-以下是原始 Mindverse 仓库内的路径，仅用于解释设计来源；独立包不需要这些文件，也不会导入它们。适配的是职责和数据轮廓，不是整段照搬生产实现。
+### Extension Scope
 
-| 生产路径 | 生产职责 / 概念 | 本包的缩减适配 |
-| --- | --- | --- |
-| `shared/canvas/snapshot.ts` | 版本化画布快照，包含更丰富的节点及项目记忆 | `src/core/canvas.ts` 只保留项目名、四类节点与连线，不带记忆 |
-| `features/canvas/state/canvasStore.ts` | 画布编辑、工作流执行、历史与远程工具状态 | 页面局部 React Flow 状态，仅提供编辑交互，无生产 store / 执行能力 |
-| `shared/canvas/snapshotTransport.ts` | 生产快照传输、持久化时的媒体与诊断字段处理 | 核心解析器与本地 JSON；没有移植生产媒体归档或诊断压缩 |
-| `shared/agent/agentAutonomy.ts` | run / phase / event / checkpoint / lease / retrieval trace 类型 | mock 只保留 runId、阶段、事件类型、时间和简单元数据；没有 checkpoint / lease 实现 |
-| `features/agent/services/autonomousAgent.ts` | 应用计划、等待节点结果、观察、修复和取消等客户端执行路径 | 一个无副作用的同步摘要函数，不复制其执行控制 |
-| `features/agent/components/AgentWorkflowPanelCore.tsx` | 生产 Agent 会话、时间线、工作流交互 | 一个请求输入框、故障开关、事件列表和结果区；无生产会话服务 |
+Coordination, durable recovery, long-term memory, RAG, scoped approvals and mid-execution updates remain unimplemented; [project goals](../README.md) describe intended behavior without fixing an implementation. Document actual state transitions, persistence boundaries, duplicate-effect risks, evidence lifecycle and cancellation guarantees.
 
-生产协议中的检索引用只是设计参考，不代表本包拥有检索实现。候选人需要自行建立会话事实和外部证据的独立模型；不要把生产大模块整体复制进来。
+Keep offline operation reproducible. Optional live adapters must keep keys server-side, validate commands and model output, restrict tools/network access and redact logs. Do not reuse production credentials or enable arbitrary code execution. Run development, tests and builds inside this package; its default port is 3061.
 
-## 数据与安全
+---
 
-当前 mock 只读取节点标题等结构信息并生成文本摘要，不修改节点、不渲染 HTML、不执行节点内容或工具输出，不调用模型。React 以文本渲染摘要与事件，输入中的指令没有执行权限。模拟工具失败后进入 `blocked`，没有隐藏重试或成功产物。
+## 繁體中文
 
-参考图使用本地 `/samples/reference.png`，由第二题自制 Three.js 白模视口生成，图片缺失会显示占位。本包不从生产媒体地址拉取素材。
+# 起始專案架構
 
-当前解析器提供结构性保护：版本、重复 ID、有效位置、节点字段和连线端点，并限制图片路径前缀。它不是完整安全边界：没有未知字段白名单、路径规范化、完整 URL 策略、所有字段长度上限或图环检测；本地存储也没有加密、用户隔离或审计。文件入口的 2 MB 上限不能替代后端的资源限制。面向不可信来源扩展时需进一步收紧模式、规范化资源路径和限制对象规模。
+此獨立畫布改編自 Mindverse 概念，並非正式環境服務。沒有父專案執行期匯入、正式環境 API 呼叫，也尚未實作多代理執行系統。
 
-起步包刻意没有：认证、权限系统、任意 shell、远程文档抓取、用户文件托管、向量库、计费、外部工具、真实审批、持久会话与运行时存储。不能宣称已经实现 prompt injection 防御，因为目前根本没有 RAG 或能被注入的模型 / 工具链；挑战需要在新增能力上补齐该测试。
+### 目前邊界
 
-## 候选人的最小扩展方向
+- `src/core/canvas.ts` 負責版本化快照、初始資料與解析，須保留公開匯出。解析會驗證結構並複製有效資料，但不是完整安全稽核或循環偵測器。
+- `src/core/mockAgent.ts` 同步回傳單代理畫布摘要與確定性事件，不依賴網路、儲存或模型；模擬失敗以 `blocked` 結束。
+- `src/app/page.tsx` 負責 React Flow 互動與瀏覽器儲存。摘要對應呼叫時的快照；顯示計時器不是執行程序，停止計時器不會中斷工具。模擬階段並非不同代理。
+- `src/app/globals.css` 提供樣式與主題，不下載遠端字型。主題文件為改編參考，並非逐字原文：[亮色](亮色主题界面标准1.md)、[暗色](暗色主题界面标准1.md)。
+- `tests/canvas.test.ts` 與 `tests/mockAgent.test.ts` 涵蓋快照驗證／隔離及模擬行為，不代表瀏覽器互動或多代理可靠性已獲驗證。
 
-建议让 UI 继续只负责展示和发命令，把调度器、检查点存储、记忆存储、检索器、工具注册表拆成可独立测试的小模块。具体目录和框架不强制，避免为了架构图增加没有职责的层。
+### 資料與安全
 
-命令可包括启动、审批、修改需求、取消和恢复。新增运行时应明确验证状态转换、需求版本和幂等键，再持久化结果 / 事件；不要让 UI 事件或文档正文直接控制工具。结果提交应校验版本和取消状态，重放应重建状态而非重新执行已经提交的副作用。
+瀏覽器僅儲存一份手動畫布存檔與主題，不儲存執行、事件、審批或需求版本。匯入／載入會取代畫布，不會復原執行；執行紀錄僅存在記憶體。
 
-持久化介质任选，关键是展示恢复窗口、原子提交或可核对策略。提供小型可注入工具夹具即可，不要求真实生成服务。具体验收和评分以主 README 为准；以上只是模块边界建议，不提供调度、冲突处理或审批算法答案。
+模擬程式讀取畫布結構並呈現文字，不執行節點內容或修改節點。本機參考圖為歷史自製 Three.js 白模圖，並非正式環境素材；未包含圖片生成服務。
 
-## 可选真实模型适配
+JSON 驗證與 2 MB 匯入上限僅提供部分保護。尚無完整網址／路徑政策、資源隔離、身分驗證、加密儲存，亦未具備未來模型／工具流程所需的提示注入防護。
 
-默认保持离线 mock，真实 LLM 不是评分前提。若自行增加 live 模式：
+### 擴充範圍
 
-- 在界面和测试命令中明确区分 mock / live；离线测试不能依赖环境密钥。
-- 密钥只保留在服务端环境变量，不能使用 `NEXT_PUBLIC_*`，不能通过 props、响应、源码、导出文件或日志泄漏。不要提交 `.env`。
-- 可在本包内新增服务端 API 适配器；浏览器只发送受验证、受大小限制的命令。不要复用父项目生产路由、凭据或资源。
-- 服务端校验任务作用域、工具白名单、参数、审批、版本、预算、超时和幂等性；模型输出必须通过结构校验，不能自行授予权限。
-- 限制远程 URL、重定向、网络目标和内容大小，避免 SSRF；在没有真实隔离时禁用任意代码和 shell 工具。
-- 只记录必要的脱敏摘要、证据引用与控制事件，不保存模型私有思维链。
+協作、持久復原、長期記憶、RAG、限定範圍審批與執行中更新均未實作；[專案目標](../README.md) 說明預期行為，不限定實作方式。文件應記錄實際狀態轉換、持久化邊界、重複副作用風險、證據生命週期與取消保證。
 
-独立开发配置使用 3061 端口，无自定义后端、无父项目中间件。启动和构建验证应在本目录进行，不需要启动生产应用。
+維持可重現的離線執行。選用的真實模型介接須將金鑰留在伺服器端，驗證指令與模型輸出，限制工具／網路存取並遮蔽紀錄中的敏感資訊。不得沿用正式環境憑證或開放任意程式碼執行。開發、測試與建置均在本套件內執行，預設連接埠為 3061。
