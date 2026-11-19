@@ -2,7 +2,7 @@
 
 ## English
 
-Extend the standalone canvas with a recoverable multi-agent runtime. Deterministic roles and local tools are sufficient. Choose one of the two standalone projects; suggested effort: 20–30 hours.
+Extend the standalone canvas with a recoverable multi-agent runtime. Deterministic roles and local tools are sufficient. Choose one of the two standalone projects.
 
 ### Run
 
@@ -52,7 +52,7 @@ Update the [architecture](docs/ARCHITECTURE.md) with actual boundaries, persiste
 
 ### 可靠的多智能體執行系統
 
-在獨立畫布中擴充可復原的多代理執行系統，可使用確定性角色與本機工具。兩個獨立專案擇一完成即可；建議投入 20–30 小時。
+在獨立畫布中擴充可復原的多代理執行系統，可使用確定性角色與本機工具。兩個獨立專案擇一完成即可。
 
 ### 執行
 
